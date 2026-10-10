@@ -1,0 +1,28 @@
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Node.js
+node_modules/
+
+# Build outputs
+dist/
+build/
+
+# Local development
+.DS_Store
+.vscode/
+.idea/
+
+# Netlify local state
+.netlify/state.json
+
+# Generated Python package metadata
+*.egg-info/

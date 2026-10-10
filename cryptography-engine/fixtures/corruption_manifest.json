@@ -1,0 +1,96 @@
+{
+  "manifest_version": "1.0.0",
+  "system": "EvidenceShield AI",
+  "module": "cryptography-engine",
+  "compliance": [
+    "RFC-8785",
+    "RFC-9162",
+    "NIST SP 800-38D",
+    "Ed25519-RFC-8032"
+  ],
+  "invariants": {
+    "identifiers": [
+      "case_id",
+      "document_id",
+      "version_id",
+      "state",
+      "digest"
+    ],
+    "fail_closed": true,
+    "no_partial_decryption": true
+  },
+  "controlled_corruption_vectors": [
+    {
+      "vector_id": "CORRUPTION_CIPHERTEXT_BITFLIP",
+      "layer": "AES-256-GCM",
+      "mutation": "Single bit inverted in encrypted ciphertext",
+      "expected_error": "CIPHERTEXT_AUTH_FAILED",
+      "exception_class": "CiphertextAuthFailedError",
+      "behavior": "Decryption aborts immediately upon tag authentication; no plaintext leaked"
+    },
+    {
+      "vector_id": "CORRUPTION_ALTERED_AAD",
+      "layer": "AES-256-GCM / RFC 8785",
+      "mutation": "case_id or version_id substituted in AAD binding",
+      "expected_error": "CIPHERTEXT_AUTH_FAILED",
+      "exception_class": "CiphertextAuthFailedError",
+      "behavior": "GCM tag authentication fails before any plaintext hash comparison"
+    },
+    {
+      "vector_id": "CORRUPTION_PLAINTEXT_DIGEST_MISMATCH",
+      "layer": "SHA-256 Original Byte Hashing",
+      "mutation": "Decrypted plaintext hash does not match immutable version digest",
+      "expected_error": "PLAINTEXT_DIGEST_MISMATCH",
+      "exception_class": "PlaintextDigestMismatchError",
+      "behavior": "Payload rejected with expected vs actual digest logged"
+    },
+    {
+      "vector_id": "CORRUPTION_INVALID_SIGNATURE",
+      "layer": "Ed25519 / RFC 8785",
+      "mutation": "1 or more bytes altered in Base64 Ed25519 signature",
+      "expected_error": "INVALID_SIGNATURE",
+      "exception_class": "InvalidSignatureError",
+      "behavior": "Digital signature verification fails closed; checkpoint rejected"
+    },
+    {
+      "vector_id": "CORRUPTION_TAMPERED_MERKLE_INCLUSION",
+      "layer": "RFC 9162 Merkle Log",
+      "mutation": "One audit path sibling altered or swapped",
+      "expected_error": "INVALID_INCLUSION_PROOF",
+      "exception_class": "InvalidInclusionProofError",
+      "behavior": "Proof recomputation does not yield checkpoint root; leaf rejected"
+    },
+    {
+      "vector_id": "CORRUPTION_TAMPERED_MERKLE_CONSISTENCY",
+      "layer": "RFC 9162 Consistency Proof",
+      "mutation": "Subtree root hash altered between tree sizes m and n",
+      "expected_error": "INVALID_CONSISTENCY_PROOF",
+      "exception_class": "InvalidConsistencyProofError",
+      "behavior": "History rewrite detected; log state rejected"
+    },
+    {
+      "vector_id": "CORRUPTION_UNSUPPORTED_OR_UNKNOWN_KEY",
+      "layer": "Key Provider / TrustedKeyStore",
+      "mutation": "Signature or DEK references unknown key version",
+      "expected_error": "UNSUPPORTED_FORMAT_OR_KEY",
+      "exception_class": "UnsupportedFormatOrKeyError",
+      "behavior": "Untrusted key rejected; passports cannot establish self-authenticity"
+    },
+    {
+      "vector_id": "CORRUPTION_PENDING_ANCHOR",
+      "layer": "Blockchain Anchor (Anvil / EVM)",
+      "mutation": "Transaction receipt has unmined block confirmation",
+      "expected_error": "PENDING_ANCHOR",
+      "exception_class": "PendingAnchorError",
+      "behavior": "Downstream verification halted pending blockchain settlement"
+    },
+    {
+      "vector_id": "CORRUPTION_ANCHOR_ROOT_MISMATCH",
+      "layer": "Blockchain Anchor (Anvil / EVM)",
+      "mutation": "On-chain smart contract recorded root differs from checkpoint",
+      "expected_error": "ANCHOR_VERIFICATION_FAILED",
+      "exception_class": "AnchorVerificationFailedError",
+      "behavior": "Attestation rejected; smart contract integrity alert raised"
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "evidenceshield-crypto"
+version = "0.1.0"
+description = "Tamper-Evident Zero-Trust Cryptography & Proof Engine for EvidenceShield AI"
+readme = "README.md"
+authors = [{ name = "EvidenceShield AI Team" }]
+license = { text = "Apache-2.0" }
+requires-python = ">=3.10"
+dependencies = [
+    "cryptography>=41.0.0",
+    "pydantic>=2.0.0",
+]
+
+[project.optional-dependencies]
+web3 = [
+    "web3>=6.0.0",
+]
+test = [
+    "pytest>=7.0.0",
+]
+
+[project.scripts]
+evidenceshield-verify = "evidenceshield_crypto.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
